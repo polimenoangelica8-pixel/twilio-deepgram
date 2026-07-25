@@ -75,6 +75,7 @@ assocaf-voice-agent/
    - `DEEPGRAM_TTS_VOICE` (es. `aura-2-nestor-it`)
    - `LLM_ENDPOINT_URL`, `LLM_API_KEY`, `LLM_MODEL`
    - `TWILIO_AUTH_TOKEN` + `VERIFY_TWILIO_SIGNATURE=true`
+   - `ASSOCAF_API_URL` (es. `https://assocaf.com`) + `VOICE_AGENT_API_KEY`
 4. In **Settings > Networking** genera un dominio pubblico (es. `assocaf-voice-agent.up.railway.app`).
 5. Imposta la variabile `PUBLIC_URL` con quel dominio (con `https://`).
 6. Railway espone già le connessioni WebSocket sullo stesso dominio: nessuna configurazione extra.
@@ -91,6 +92,26 @@ assocaf-voice-agent/
 3. Salva. Ora ogni chiamata al numero verrà gestita dall'agente vocale.
 
 > **Callback (chiamata in uscita)**: se usi il sistema "Ti Richiamiamo Noi" del sito, imposta nel parametro `Url` della chiamata Twilio lo stesso endpoint `https://<PUBLIC_URL>/twilio/incoming`.
+
+---
+
+## 📅 Registrazione appuntamenti (function calling)
+
+L'agente sa riconoscere quando il cliente vuole prenotare e registra l'appuntamento
+direttamente nel gestionale del sito ASSOCAF (stesso database della dashboard admin).
+
+Come funziona:
+1. L'agente raccoglie a voce nome, cognome, telefono, motivo e giorno preferito.
+2. Chiama la funzione `registra_appuntamento` (definita in `src/config/agentSettings.js`).
+3. Il server invia i dati all'endpoint del sito `POST /api/voice/book-appointment`,
+   autenticandosi con l'header `x-api-key`.
+4. L'appuntamento compare nella dashboard admin con stato **in attesa**.
+
+Configurazione necessaria (identica su entrambi i lati):
+- Sul **voice agent** (questo progetto): `ASSOCAF_API_URL` e `VOICE_AGENT_API_KEY`.
+- Sul **sito assocaf.com**: la variabile `VOICE_AGENT_API_KEY` con lo **stesso valore**.
+
+> La chiave serve a garantire che solo il tuo agente vocale possa creare appuntamenti.
 
 ---
 
